@@ -1,0 +1,277 @@
+version: "3.7"
+
+networks:
+  local:
+    driver: bridge
+
+volumes:
+  dbData:
+    driver: local
+  cacheData:
+    driver: local
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+        MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+        SERVICE_TAGS: dev
+        SERVICE_NAME: mysql
+    ports:
+      - 3306:3306
+    volumes:
+      - ./mysql.cnf:/etc/mysql/conf.d/my.cnf
+      - dbData:/var/lib/mysql/
+    networks:
+      - local
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    command: redis-server --save 20 1 --loglevel warning
+    depends_on:
+      - mysql
+    volumes:
+      - cacheData:/data
+    networks:
+      - local
+
+  apache:
+    image: httpd:latest
+    container_name: apache
+    restart: unless-stopped
+    working_dir: /var/www
+    depends_on:
+      - laravel
+    ports:
+      - 80:80
+    volumes:
+      - ./../www/:/var/www
+      - ./vhosts.conf:/usr/local/apache2/conf/extra/vhosts.conf
+      - ./httpd.conf:/usr/local/apache2/conf/httpd.conf
+    networks:
+      - local
+
+  chipy:
+    build:
+      args:
+        user: ${DOCKER_USER}
+        uid: ${DOCKER_UID}
+      context: ./
+      dockerfile: app.Dockerfile
+    image: app:fpm
+    container_name: chipy
+    restart: unless-stopped
+    environment:
+      XDEBUG_MODE: ${XDEBUG_MODE}
+    working_dir: /var/www/chipy
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+      - ./../profiler:/tmp/profiler
+    networks:
+      - local
+    extra_hosts:
+      - chipy.local:${DOCKER_IP}
+
+  chipy_admin:
+    image: app:fpm
+    container_name: chipy_admin
+    restart: unless-stopped
+    environment:
+      XDEBUG_MODE: ${XDEBUG_MODE}
+    working_dir: /var/www/chipy_admin
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  chipy_models:
+    image: app:fpm
+    container_name: chipy_models
+    restart: unless-stopped
+    working_dir: /var/www/chipy_models
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  chipy_remix:
+    image: node:21
+    container_name: chipy.remix
+    restart: unless-stopped
+    working_dir: /var/www/chipy_remix
+    command: npm run local
+    depends_on:
+      - chipy
+    ports:
+      - 3010:3010
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  spinmybonus:
+    image: app:fpm
+    container_name: spinmybonus
+    restart: unless-stopped
+    environment:
+      XDEBUG_MODE: ${XDEBUG_MODE}
+    working_dir: /var/www/spinmybonus
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+      - ./../profiler:/tmp/profiler
+    networks:
+      - local
+    extra_hosts:
+      - spinmybonus.local:${DOCKER_IP}
+
+  spinmybonus_admin:
+    image: app:fpm
+    container_name: spinmybonus_admin
+    restart: unless-stopped
+    environment:
+      XDEBUG_MODE: ${XDEBUG_MODE}
+    working_dir: /var/www/spinmybonus_admin
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  spinmybonus_models:
+    image: app:fpm
+    container_name: spinmybonus_models
+    restart: unless-stopped
+    working_dir: /var/www/spinmybonus_models
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  slotsmate:
+    image: app8:fpm
+    container_name: slotsmate
+    restart: unless-stopped
+    environment:
+      XDEBUG_MODE: ${XDEBUG_MODE}
+    working_dir: /var/www/slotsmate
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+      - ./../profiler:/tmp/profiler
+    networks:
+      - local
+    extra_hosts:
+      - slotsmate.local:${DOCKER_IP}
+
+  slotsmate_admin:
+    image: app:fpm
+    container_name: slotsmate_admin
+    restart: unless-stopped
+    environment:
+      XDEBUG_MODE: ${XDEBUG_MODE}
+    working_dir: /var/www/slotsmate_admin
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  slotsmate_models:
+    image: app:fpm
+    container_name: slotsmate_models
+    restart: unless-stopped
+    working_dir: /var/www/slotsmate_models
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  slotsmate_remix:
+    image: node:21
+    container_name: slotsmate.remix
+    restart: unless-stopped
+    working_dir: /var/www/slotsmate_remix
+    command: npm run local
+    depends_on:
+      - slotsmate
+    ports:
+      - 3020:3020
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  global_models:
+    image: app:fpm
+    container_name: global_models
+    restart: unless-stopped
+    working_dir: /var/www/global_models
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  frontend:
+    image: app:fpm
+    container_name: frontend
+    restart: unless-stopped
+    working_dir: /var/www/frontend
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+      
+  laravel:
+    build:
+      args:
+        user: ${DOCKER_USER}
+        uid: ${DOCKER_UID}
+      context: ./
+      dockerfile: app8.Dockerfile
+    image: app8:fpm
+    container_name: laravel
+    restart: unless-stopped
+    working_dir: /var/www/laravel
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local

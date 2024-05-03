@@ -1,0 +1,5 @@
+[mysqld]
+sql_mode=""
+max_connections=100
+innodb_buffer_pool_size=512M
+innodb_io_capacity=500
