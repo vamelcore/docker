@@ -171,7 +171,7 @@ services:
       - local
 
   slotsmate:
-    image: app8:fpm
+    image: app:fpm
     container_name: slotsmate
     restart: unless-stopped
     environment:
@@ -226,6 +226,52 @@ services:
       - slotsmate
     ports:
       - 3020:3020
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  nonstopbonus:
+    image: app:fpm
+    container_name: nonstopbonus
+    restart: unless-stopped
+    environment:
+      XDEBUG_MODE: ${XDEBUG_MODE}
+    working_dir: /var/www/nonstopbonus
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+      - ./../profiler:/tmp/profiler
+    networks:
+      - local
+    extra_hosts:
+      - nonstopbonus.local:${DOCKER_IP}
+
+  nonstopbonus_admin:
+    image: app:fpm
+    container_name: nonstopbonus_admin
+    restart: unless-stopped
+    environment:
+      XDEBUG_MODE: ${XDEBUG_MODE}
+    working_dir: /var/www/nonstopbonus_admin
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./../www/:/var/www
+    networks:
+      - local
+
+  nonstopbonus_models:
+    image: app:fpm
+    container_name: nonstopbonus_models
+    restart: unless-stopped
+    working_dir: /var/www/nonstopbonus_models
+    depends_on:
+      - mysql
+      - redis
     volumes:
       - ./../www/:/var/www
     networks:
