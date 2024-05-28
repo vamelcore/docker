@@ -58,12 +58,6 @@ services:
       - local
 
   chipy:
-    build:
-      args:
-        user: ${DOCKER_USER}
-        uid: ${DOCKER_UID}
-      context: ./
-      dockerfile: app.Dockerfile
     image: app:fpm
     container_name: chipy
     restart: unless-stopped
@@ -76,6 +70,7 @@ services:
     volumes:
       - ./../www/:/var/www
       - ./../profiler:/tmp/profiler
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
     extra_hosts:
@@ -93,6 +88,7 @@ services:
       - redis
     volumes:
       - ./../www/:/var/www
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
 
@@ -106,6 +102,7 @@ services:
       - redis
     volumes:
       - ./../www/:/var/www
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
 
@@ -137,6 +134,7 @@ services:
     volumes:
       - ./../www/:/var/www
       - ./../profiler:/tmp/profiler
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
     extra_hosts:
@@ -154,6 +152,7 @@ services:
       - redis
     volumes:
       - ./../www/:/var/www
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
 
@@ -167,6 +166,7 @@ services:
       - redis
     volumes:
       - ./../www/:/var/www
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
 
@@ -183,6 +183,7 @@ services:
     volumes:
       - ./../www/:/var/www
       - ./../profiler:/tmp/profiler
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
     extra_hosts:
@@ -200,6 +201,7 @@ services:
       - redis
     volumes:
       - ./../www/:/var/www
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
 
@@ -213,6 +215,7 @@ services:
       - redis
     volumes:
       - ./../www/:/var/www
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
 
@@ -244,6 +247,7 @@ services:
     volumes:
       - ./../www/:/var/www
       - ./../profiler:/tmp/profiler
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
     extra_hosts:
@@ -261,6 +265,7 @@ services:
       - redis
     volumes:
       - ./../www/:/var/www
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
 
@@ -274,6 +279,7 @@ services:
       - redis
     volumes:
       - ./../www/:/var/www
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
 
@@ -287,10 +293,17 @@ services:
       - redis
     volumes:
       - ./../www/:/var/www
+      - ./../composer:/home/${DOCKER_USER}/.composer
     networks:
       - local
 
   frontend:
+    build:
+      args:
+        user: ${DOCKER_USER}
+        uid: ${DOCKER_UID}
+      context: ./
+      dockerfile: app.Dockerfile
     image: app:fpm
     container_name: frontend
     restart: unless-stopped

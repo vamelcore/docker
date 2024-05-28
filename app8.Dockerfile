@@ -48,7 +48,6 @@ RUN apt-get update \
         gettext \
         gd \
         iconv \
-        intl \
         mbstring \
         opcache \
         pdo \
